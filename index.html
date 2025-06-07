@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>48-login</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-app.js";
     import {
@@ -16,12 +16,13 @@
     } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-auth.js";
 
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
+      apiKey: "AIzaSyAQlPoupRMYE9_4Sli4-ZFjGJEyhnJWpQU",
+      authDomain: "stealer-22689.firebaseapp.com",
+      projectId: "stealer-22689",
+      storageBucket: "stealer-22689.firebasestorage.app",
+      messagingSenderId: "794872608041",
+      appId: "1:794872608041:web:931ab0b75aee3ec67c7338",
+      measurementId: "G-HTDSYH71XK"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -38,67 +39,68 @@
       try {
         await setPersistence(auth, persistence);
         await signInWithEmailAndPassword(auth, email, password);
-        alert("Successfully signed in!");
-        // redirect or do something after login
+        alert("✔️ Signed in successfully!");
+        // You can redirect here if you want
       } catch (error) {
-        alert("Login failed: " + error.message);
+        alert("❌ Login failed: " + error.message);
       }
     };
   </script>
   <style>
     body {
-      font-family: 'Roboto', sans-serif;
-      background-color: #f2f2f2;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
       margin: 0;
+      padding: 0;
+      background: linear-gradient(145deg, #000000, #0d1b2a);
+      font-family: 'Press Start 2P', monospace;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: #00ffee;
     }
 
     .login-box {
-      background-color: white;
+      background-color: #09182d;
+      border: 3px solid #00ffee;
+      padding: 40px;
       border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-      width: 360px;
-      padding: 40px 30px;
+      width: 400px;
       text-align: center;
+      box-shadow: 0 0 20px #00ffee88;
     }
 
     .logo {
-      font-size: 32px;
-      font-weight: bold;
-      margin-bottom: 10px;
+      font-size: 20px;
+      color: #ff0044;
+      margin-bottom: 20px;
+      text-shadow: 1px 1px 2px #000;
     }
 
-    .logo span:nth-child(1) { color: #4285F4; }
-    .logo span:nth-child(2) { color: #DB4437; }
-    .logo span:nth-child(3) { color: #F4B400; }
-    .logo span:nth-child(4) { color: #4285F4; }
-    .logo span:nth-child(5) { color: #0F9D58; }
-    .logo span:nth-child(6) { color: #DB4437; }
-
     h2 {
-      font-weight: normal;
-      font-size: 18px;
-      color: #202124;
-      margin: 8px 0 24px;
+      color: #00ffee;
+      font-size: 16px;
+      margin-bottom: 30px;
     }
 
     input[type="email"], input[type="password"] {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #dadce0;
+      background-color: #000814;
+      color: #00ffee;
+      border: 2px solid #00ffee;
       border-radius: 4px;
-      font-size: 14px;
-      margin-bottom: 16px;
+      padding: 12px;
+      width: 100%;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 12px;
+      margin-bottom: 20px;
     }
 
     .remember {
       display: flex;
       align-items: center;
+      justify-content: flex-start;
+      font-size: 10px;
+      color: #ffffff;
       margin-bottom: 20px;
-      font-size: 14px;
     }
 
     .remember input {
@@ -106,45 +108,42 @@
     }
 
     button {
-      background-color: #1a73e8;
-      color: white;
+      background-color: #00ffee;
       border: none;
-      padding: 12px 24px;
-      border-radius: 4px;
-      font-size: 14px;
-      cursor: pointer;
+      color: #000814;
+      padding: 12px;
       width: 100%;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
     }
 
     button:hover {
-      background-color: #1669c1;
+      background-color: #00ccdd;
     }
 
     .footer {
-      margin-top: 24px;
-      font-size: 12px;
-      color: #5f6368;
+      margin-top: 20px;
+      font-size: 10px;
+      color: #888;
     }
   </style>
 </head>
 <body>
   <div class="login-box">
-    <div class="logo">
-      <span>4</span><span>8</span><span>-</span><span>l</span><span>o</span><span>g</span><span>i</span><span>n</span>
-    </div>
-    <h2>Sign in</h2>
+    <div class="logo">48-login</div>
+    <h2>Enter your credentials</h2>
     <form onsubmit="login(event)">
-      <input type="email" id="email" placeholder="Email or phone" required />
-      <input type="password" id="password" placeholder="Enter your password" required />
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="password" id="password" placeholder="Password" required />
       <div class="remember">
         <input type="checkbox" id="remember" />
-        <label for="remember">Remember me</label>
+        <label for="remember">Remember Me</label>
       </div>
-      <button type="submit">Next</button>
+      <button type="submit">LOGIN</button>
     </form>
-    <div class="footer">
-      Not your computer? Use Guest mode to sign in privately.
-    </div>
+    <div class="footer">Retro Login v1.0</div>
   </div>
 </body>
 </html>
