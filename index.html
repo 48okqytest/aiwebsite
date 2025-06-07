@@ -86,19 +86,22 @@
 <body>
   <h1>48-Login</h1>
   <div class="login-box">
-    <input type="email" id="email" placeholder="EMAIL" autocomplete="username" />
+    <input type="text" id="username" placeholder="USERNAME" autocomplete="username" />
     <input type="password" id="password" placeholder="PASSWORD" autocomplete="current-password" />
-    <button id="loginBtn">Login / Register</button>
+    <button id="saveBtn">Save Credentials</button>
     <div id="message"></div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-app.js";
     import {
-      getAuth,
-      createUserWithEmailAndPassword,
-      signInWithEmailAndPassword,
-    } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-auth.js";
+      getFirestore,
+      collection,
+      addDoc,
+      query,
+      where,
+      getDocs
+    } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAQlPoupRMYE9_4Sli4-ZFjGJEyhnJWpQU",
@@ -111,11 +114,11 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-    const emailInput = document.getElementById("email");
+    const usernameInput = document.getElementById("username");
     const passwordInput = document.getElementById("password");
-    const loginBtn = document.getElementById("loginBtn");
+    const saveBtn = document.getElementById("saveBtn");
     const messageDiv = document.getElementById("message");
 
     function showMessage(msg, error = false) {
@@ -123,33 +126,39 @@
       messageDiv.style.color = error ? "#ff4444" : "#00aaff";
     }
 
-    loginBtn.addEventListener("click", async () => {
-      const email = emailInput.value.trim();
+    saveBtn.addEventListener("click", async () => {
+      const username = usernameInput.value.trim();
       const password = passwordInput.value.trim();
 
-      if (!email || !password) {
-        showMessage("Please enter both email and password.", true);
+      if (!username || !password) {
+        showMessage("Please enter username and password.", true);
         return;
       }
 
-      showMessage("Processing...");
+      showMessage("Checking...");
 
       try {
-        // Try to sign in
-        await signInWithEmailAndPassword(auth, email, password);
-        showMessage("✅ Logged in successfully!");
-      } catch (signInError) {
-        // If sign in fails, try register
-        if (signInError.code === "auth/user-not-found") {
-          try {
-            await createUserWithEmailAndPassword(auth, email, password);
-            showMessage("✅ Account created successfully!");
-          } catch (registerError) {
-            showMessage(`Error: ${registerError.message}`, true);
-          }
-        } else {
-          showMessage(`Error: ${signInError.message}`, true);
+        // Check if username already exists
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("username", "==", username));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          showMessage("Username already taken, try a different one.", true);
+          return;
         }
+
+        // Save new user credentials
+        await addDoc(usersRef, {
+          username: username,
+          password: password
+        });
+
+        showMessage("Credentials saved successfully!");
+        usernameInput.value = "";
+        passwordInput.value = "";
+      } catch (error) {
+        showMessage("Error: " + error.message, true);
       }
     });
   </script>
