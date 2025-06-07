@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AI Chatbot</title>
+  <title>Custom AI Chatbot</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -14,6 +14,7 @@
     #chat {
       flex: 1; padding: 20px; overflow-y: auto;
       background: white;
+      display: flex; flex-direction: column;
     }
     .message {
       margin-bottom: 10px;
@@ -39,10 +40,36 @@
     button {
       padding: 10px 20px; font-size: 16px; margin-left: 10px;
     }
+    #controls {
+      background: #ddd; padding: 10px;
+      display: flex; flex-wrap: wrap;
+      gap: 10px; align-items: center;
+    }
+    #characterPrompt {
+      flex: 1;
+      padding: 5px;
+    }
+    #typingStatus {
+      font-style: italic; color: #888;
+      margin-left: 10px;
+    }
   </style>
 </head>
 <body>
+  <div id="controls">
+    <label for="characterSelect">Character:</label>
+    <select id="characterSelect" onchange="updatePrompt()">
+      <option value="You are a helpful assistant.">Default Assistant</option>
+      <option value="You are a pirate who always talks like a sea captain.">Pirate</option>
+      <option value="You are Yoda from Star Wars. Speak in backward grammar you must.">Yoda</option>
+      <option value="You are Luna, a cute anime girl who gives programming advice.">Luna</option>
+    </select>
+    <input type="text" id="characterPrompt" value="You are a helpful assistant." placeholder="Custom character prompt..." />
+    <span id="typingStatus"></span>
+  </div>
+
   <div id="chat"></div>
+
   <div id="inputArea">
     <input type="text" id="userInput" placeholder="Type your message..." />
     <button onclick="sendMessage()">Send</button>
@@ -50,15 +77,24 @@
 
   <script>
     const API_URL = "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta";
-    const HF_TOKEN = "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"; // 🔐 Replace this with your actual token
+    const HF_TOKEN = "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";
+
+    function updatePrompt() {
+      const select = document.getElementById("characterSelect");
+      document.getElementById("characterPrompt").value = select.value;
+    }
 
     async function sendMessage() {
       const inputBox = document.getElementById("userInput");
       const userInput = inputBox.value.trim();
+      const characterPrompt = document.getElementById("characterPrompt").value.trim();
+
       if (!userInput) return;
 
       appendMessage("You", userInput, "user");
       inputBox.value = "";
+
+      document.getElementById("typingStatus").innerText = "AI is typing...";
 
       try {
         const response = await fetch(API_URL, {
@@ -68,26 +104,27 @@
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            inputs: userInput,
+            inputs: `${characterPrompt}\nUser: ${userInput}`,
             parameters: {
-              max_new_tokens: 100,
-              return_full_text: false
+              max_new_tokens: 150,
+              temperature: 0.7,
+              top_p: 0.9,
+              repetition_penalty: 1.1
             }
           })
         });
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
 
         const data = await response.json();
-        const botReply = data?.[0]?.generated_text?.trim() || "No response from AI.";
+        const botReply = data?.[0]?.generated_text?.replace(`${characterPrompt}\nUser: ${userInput}`, "").trim() || "No response from AI.";
         appendMessage("AI", botReply, "bot");
-
-      } catch (error) {
-        console.error("Error:", error);
+      } catch (err) {
+        console.error(err);
         appendMessage("AI", "Sorry, there was an error connecting to the AI.", "bot");
       }
+
+      document.getElementById("typingStatus").innerText = "";
     }
 
     function appendMessage(sender, message, className) {
