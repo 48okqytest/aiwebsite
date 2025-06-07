@@ -135,7 +135,7 @@
         return;
       }
 
-      showMessage("Checking...");
+      showMessage("Checking username availability...");
 
       try {
         // Check if username already exists
@@ -151,7 +151,8 @@
         // Save new user credentials
         await addDoc(usersRef, {
           username: username,
-          password: password
+          password: password,
+          createdAt: new Date().toISOString()
         });
 
         showMessage("Credentials saved successfully!");
@@ -159,6 +160,7 @@
         passwordInput.value = "";
       } catch (error) {
         showMessage("Error: " + error.message, true);
+        console.error("Firestore error:", error);
       }
     });
   </script>
