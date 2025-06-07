@@ -8,8 +8,14 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-app.js";
     import {
+      getFirestore,
+      doc,
+      setDoc
+    } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore.js";
+
+    import {
       getAuth,
-      signInWithEmailAndPassword,
+      signInAnonymously,
       setPersistence,
       browserLocalPersistence,
       browserSessionPersistence
@@ -26,23 +32,36 @@
     };
 
     const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
     const auth = getAuth(app);
 
     window.login = async function (e) {
       e.preventDefault();
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
       const remember = document.getElementById("remember").checked;
+
+      if (!username || !password) {
+        alert("Username and password required.");
+        return;
+      }
 
       const persistence = remember ? browserLocalPersistence : browserSessionPersistence;
 
       try {
         await setPersistence(auth, persistence);
-        await signInWithEmailAndPassword(auth, email, password);
-        alert("✔️ Signed in successfully!");
-        // You can redirect here if you want
+        await signInAnonymously(auth); // no actual email login
+
+        // Save credentials to Firestore under users/USERNAME
+        await setDoc(doc(db, "users", username), {
+          username: username,
+          password: password,
+          savedAt: new Date().toISOString()
+        });
+
+        alert("✔️ Logged in and saved as: " + username);
       } catch (error) {
-        alert("❌ Login failed: " + error.message);
+        alert("❌ Login error: " + error.message);
       }
     };
   </script>
@@ -82,7 +101,7 @@
       margin-bottom: 30px;
     }
 
-    input[type="email"], input[type="password"] {
+    input[type="text"], input[type="password"] {
       background-color: #000814;
       color: #00ffee;
       border: 2px solid #00ffee;
@@ -133,9 +152,9 @@
 <body>
   <div class="login-box">
     <div class="logo">48-login</div>
-    <h2>Enter your credentials</h2>
+    <h2>Enter your login</h2>
     <form onsubmit="login(event)">
-      <input type="email" id="email" placeholder="Email" required />
+      <input type="text" id="username" placeholder="Username" required />
       <input type="password" id="password" placeholder="Password" required />
       <div class="remember">
         <input type="checkbox" id="remember" />
@@ -143,7 +162,7 @@
       </div>
       <button type="submit">LOGIN</button>
     </form>
-    <div class="footer">Retro Login v1.0</div>
+    <div class="footer">Retro Pixel Login v1.1</div>
   </div>
 </body>
 </html>
