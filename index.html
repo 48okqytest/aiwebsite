@@ -1,210 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>AI Chat with Personality</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap');
-  body {
-    margin: 0; 
-    background: #1a0b3d;
-    color: #ddd;
-    font-family: 'Roboto Mono', monospace;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-  }
-  header {
-    background: #2e1a6d;
-    padding: 15px 20px;
-    text-align: center;
-    font-size: 1.5em;
-    font-weight: 600;
-    color: #b9a1ff;
-    letter-spacing: 1px;
-  }
-  #container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    max-width: 700px;
-    margin: 20px auto;
-    background: #2a1a55;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 0 15px #6e52ffaa;
-  }
-  #chat {
-    flex: 1;
-    margin-top: 10px;
-    background: #271d55;
-    border-radius: 8px;
-    padding: 15px;
-    overflow-y: auto;
-    color: #eee;
-    font-size: 1.05em;
-    line-height: 1.4em;
-  }
-  .message {
-    margin-bottom: 16px;
-    max-width: 90%;
-  }
-  .user {
-    color: #aaccff;
-    font-weight: 700;
-  }
-  .ai {
-    color: #d3bfff;
-  }
-  #status {
-    margin-top: 8px;
-    font-style: italic;
-    color: #a48cff;
-    min-height: 22px;
-  }
-  #input-area {
-    margin-top: 15px;
-    display: flex;
-    gap: 10px;
-  }
-  #userInput {
-    flex: 1;
-    background: #3b2a82;
-    border-radius: 8px;
-    border: none;
-    padding: 10px;
-    color: #eee;
-    font-family: 'Roboto Mono', monospace;
-    font-size: 1em;
-  }
-  #sendBtn {
-    background: #6e52ff;
-    color: white;
-    font-weight: 700;
-    border: none;
-    border-radius: 8px;
-    padding: 0 20px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
-  #sendBtn:hover {
-    background: #8f70ff;
-  }
-  @media (max-width: 600px) {
-    #container {
-      margin: 10px;
-      padding: 15px;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #f2f2f2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
     }
-  }
-</style>
+
+    .login-container {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      width: 360px;
+      padding: 40px 30px;
+      text-align: center;
+    }
+
+    .logo {
+      font-size: 26px;
+      color: #4285f4;
+      margin-bottom: 16px;
+    }
+
+    h2 {
+      font-weight: 400;
+      margin-bottom: 24px;
+      color: #202124;
+    }
+
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0 20px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    button {
+      background-color: #1a73e8;
+      color: white;
+      border: none;
+      padding: 12px;
+      width: 100%;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #1669c1;
+    }
+
+    .footer {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #777;
+    }
+  </style>
 </head>
 <body>
-  <header>AI Chat with Personality</header>
-  <div id="container">
-    <div id="chat"></div>
-    <div id="status"></div>
-    <div id="input-area">
-      <input type="text" id="userInput" placeholder="Type your message here..." autocomplete="off" />
-      <button id="sendBtn">Send</button>
+  <div class="login-container">
+    <div class="logo">Not Google</div>
+    <h2>Sign in</h2>
+    <form>
+      <input type="email" placeholder="Email or phone" required>
+      <input type="password" placeholder="Enter your password" required>
+      <button type="submit">Next</button>
+    </form>
+    <div class="footer">
+      This is a clone for educational use only.
     </div>
   </div>
-
-<script>
-  const HF_TOKEN = "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";
-  // Use a reliable GPT-2 or GPT-J model URL from Hugging Face
-  // GPT-2 is small and fast but not as smart; GPT-J 6B is better but heavier.
-  const API_URL = "https://api-inference.huggingface.co/models/gpt2";
-
-  const chatDiv = document.getElementById("chat");
-  const statusDiv = document.getElementById("status");
-  const sendBtn = document.getElementById("sendBtn");
-  const userInput = document.getElementById("userInput");
-
-  // Fixed AI personality prompt (inherent)
-  const AI_PERSONALITY = `You are a helpful and friendly assistant who loves to explain things clearly, help with any topic, and occasionally crack a light joke. Keep your tone positive and supportive.\n\n`;
-
-  // Store conversation history (user and AI)
-  let conversationHistory = "";
-
-  sendBtn.addEventListener("click", () => {
-    const text = userInput.value.trim();
-    if (!text) return;
-    addMessage(text, "user");
-    userInput.value = "";
-    sendToAI(text);
-  });
-
-  userInput.addEventListener("keydown", e => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendBtn.click();
-    }
-  });
-
-  function addMessage(text, sender) {
-    const messageEl = document.createElement("div");
-    messageEl.className = "message " + sender;
-    messageEl.textContent = (sender === "user" ? "You: " : "AI: ") + text;
-    chatDiv.appendChild(messageEl);
-    chatDiv.scrollTop = chatDiv.scrollHeight;
-  }
-
-  async function sendToAI(userText) {
-    statusDiv.textContent = "AI is typing...";
-    const prompt = AI_PERSONALITY +
-      (conversationHistory ? conversationHistory + "\n" : "") +
-      `User: ${userText}\nAI:`;
-
-    try {
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${HF_TOKEN}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          inputs: prompt,
-          parameters: {
-            max_new_tokens: 150,
-            temperature: 0.7,
-            top_p: 0.9,
-            repetition_penalty: 1.1,
-            return_full_text: false
-          }
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-
-      if (data && data.length && data[0].generated_text) {
-        let aiResponse = data[0].generated_text;
-        // Remove prompt from response if repeated
-        if (aiResponse.startsWith(prompt)) {
-          aiResponse = aiResponse.slice(prompt.length).trim();
-        }
-        if (!aiResponse) aiResponse = "[No response generated.]";
-
-        addMessage(aiResponse, "ai");
-
-        // Update conversation history (limit size)
-        conversationHistory += `User: ${userText}\nAI: ${aiResponse}\n`;
-        if (conversationHistory.length > 1000) {
-          conversationHistory = conversationHistory.slice(conversationHistory.length - 1000);
-        }
-      } else {
-        addMessage("[AI did not return a valid response]", "ai");
-      }
-    } catch (error) {
-      addMessage(`[Error: ${error.message}]`, "ai");
-    } finally {
-      statusDiv.textContent = "";
-    }
-  }
-</script>
 </body>
 </html>
