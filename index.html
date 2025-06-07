@@ -92,7 +92,7 @@
     <div id="message"></div>
   </div>
 
-  <!-- Firebase UMD SDKs -->
+  <!-- Firebase UMD SDKs (must load BEFORE your script) -->
   <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore-compat.js"></script>
 
@@ -107,7 +107,6 @@
       measurementId: "G-HTDSYH71XK"
     };
 
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
