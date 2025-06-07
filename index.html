@@ -1,57 +1,153 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Custom AI Chatbot</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
+    /* Reset & base */
+    * {
+      box-sizing: border-box;
+    }
+    body, html {
       margin: 0; padding: 0;
-      display: flex; flex-direction: column;
-      height: 100vh; background-color: #f0f0f0;
+      height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0f0c29;  /* dark purple-black gradient */
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      color: #ddd;
+      display: flex;
+      flex-direction: column;
     }
+
+    /* Controls panel */
+    #controls {
+      background: #1f1b3a;
+      padding: 15px 20px;
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      flex-wrap: wrap;
+      border-bottom: 1px solid #4b3f88;
+    }
+
+    #controls label {
+      font-weight: 600;
+      color: #a78bfa;
+    }
+
+    select, input[type=text] {
+      background: #2a2460;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: #ddd;
+      font-size: 15px;
+      min-width: 200px;
+      transition: background 0.3s;
+    }
+    select:hover, input[type=text]:hover,
+    select:focus, input[type=text]:focus {
+      background: #3f34a7;
+      outline: none;
+      color: white;
+      box-shadow: 0 0 10px #a78bfa;
+    }
+
+    #typingStatus {
+      font-style: italic;
+      color: #b9a1ff;
+      min-width: 140px;
+      font-size: 14px;
+      user-select: none;
+    }
+
+    /* Chat container */
     #chat {
-      flex: 1; padding: 20px; overflow-y: auto;
-      background: white;
-      display: flex; flex-direction: column;
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: #1a1635;
+      scrollbar-width: thin;
+      scrollbar-color: #5c4db1 transparent;
     }
+    #chat::-webkit-scrollbar {
+      width: 8px;
+    }
+    #chat::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    #chat::-webkit-scrollbar-thumb {
+      background-color: #6e5dd2;
+      border-radius: 4px;
+    }
+
     .message {
-      margin-bottom: 10px;
-      padding: 10px;
-      border-radius: 8px;
-      max-width: 80%;
+      max-width: 75%;
+      padding: 12px 18px;
+      border-radius: 18px;
+      font-size: 16px;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      user-select: text;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.25);
     }
+
     .user {
-      background-color: #dcf8c6;
+      background: #6f42c1;
+      color: #eee;
       align-self: flex-end;
-      text-align: right;
+      border-bottom-right-radius: 4px;
     }
     .bot {
-      background-color: #e5e5ea;
+      background: #3b2a99;
+      color: #ddd;
       align-self: flex-start;
+      border-bottom-left-radius: 4px;
     }
+
+    /* Input area */
     #inputArea {
-      display: flex; padding: 10px; background: #eee;
+      background: #1f1b3a;
+      padding: 15px 20px;
+      display: flex;
+      gap: 10px;
+      border-top: 1px solid #4b3f88;
     }
     #userInput {
-      flex: 1; padding: 10px; font-size: 16px;
+      flex: 1;
+      padding: 12px 16px;
+      font-size: 16px;
+      border-radius: 12px;
+      border: none;
+      background: #2a2460;
+      color: #ddd;
+      transition: background 0.3s;
+    }
+    #userInput:focus {
+      outline: none;
+      background: #3f34a7;
+      box-shadow: 0 0 10px #a78bfa;
+      color: white;
     }
     button {
-      padding: 10px 20px; font-size: 16px; margin-left: 10px;
+      background: #7c55f1;
+      color: white;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 22px;
+      cursor: pointer;
+      transition: background 0.3s;
+      font-size: 16px;
+      user-select: none;
     }
-    #controls {
-      background: #ddd; padding: 10px;
-      display: flex; flex-wrap: wrap;
-      gap: 10px; align-items: center;
-    }
-    #characterPrompt {
-      flex: 1;
-      padding: 5px;
-    }
-    #typingStatus {
-      font-style: italic; color: #888;
-      margin-left: 10px;
+    button:hover {
+      background: #a278ff;
     }
   </style>
 </head>
@@ -71,32 +167,45 @@
   <div id="chat"></div>
 
   <div id="inputArea">
-    <input type="text" id="userInput" placeholder="Type your message..." />
+    <input type="text" id="userInput" placeholder="Type your message..." onkeydown="if(event.key==='Enter'){sendMessage();}" autofocus />
     <button onclick="sendMessage()">Send</button>
   </div>
 
   <script>
+    // Use your preferred model here (example model used)
     const API_URL = "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta";
     const HF_TOKEN = "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";
 
+    // Sync dropdown and prompt input
     function updatePrompt() {
       const select = document.getElementById("characterSelect");
       document.getElementById("characterPrompt").value = select.value;
     }
 
+    // Append chat messages to container
+    function appendMessage(sender, message, className) {
+      const chat = document.getElementById("chat");
+      const msgDiv = document.createElement("div");
+      msgDiv.className = `message ${className}`;
+      msgDiv.innerHTML = `<strong>${sender}:</strong> ${message}`;
+      chat.appendChild(msgDiv);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
     async function sendMessage() {
       const inputBox = document.getElementById("userInput");
-      const userInput = inputBox.value.trim();
+      let userInput = inputBox.value.trim();
+      if (!userInput) return;
+      inputBox.value = "";
+      appendMessage("You", userInput, "user");
+
       const characterPrompt = document.getElementById("characterPrompt").value.trim();
 
-      if (!userInput) return;
-
-      appendMessage("You", userInput, "user");
-      inputBox.value = "";
-
-      document.getElementById("typingStatus").innerText = "AI is typing...";
+      const typingStatus = document.getElementById("typingStatus");
+      typingStatus.textContent = "AI is typing...";
 
       try {
+        // Call the API sending prompt as system instruction separately
         const response = await fetch(API_URL, {
           method: "POST",
           headers: {
@@ -104,7 +213,11 @@
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            inputs: `${characterPrompt}\nUser: ${userInput}`,
+            // Use model that supports chat format, or fallback to instruct format
+            inputs: {
+              "system": characterPrompt,
+              "user": userInput
+            },
             parameters: {
               max_new_tokens: 150,
               temperature: 0.7,
@@ -117,23 +230,38 @@
         if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
 
         const data = await response.json();
-        const botReply = data?.[0]?.generated_text?.replace(`${characterPrompt}\nUser: ${userInput}`, "").trim() || "No response from AI.";
+
+        // Try different data paths to extract generated text
+        let botReply = "";
+
+        // Some HF models return array with generated_text
+        if (Array.isArray(data) && data.length > 0 && data[0].generated_text) {
+          botReply = data[0].generated_text;
+        }
+        // Some models return chat completions style response:
+        else if (data.hasOwnProperty('generated_text')) {
+          botReply = data.generated_text;
+        }
+        // Or raw text fallback
+        else if (typeof data === 'string') {
+          botReply = data;
+        }
+        else {
+          botReply = "Sorry, I couldn't get a proper response.";
+        }
+
+        // Remove the prompt text from the beginning if included
+        if (botReply.startsWith(characterPrompt)) {
+          botReply = botReply.slice(characterPrompt.length).trim();
+        }
+
         appendMessage("AI", botReply, "bot");
       } catch (err) {
         console.error(err);
         appendMessage("AI", "Sorry, there was an error connecting to the AI.", "bot");
+      } finally {
+        typingStatus.textContent = "";
       }
-
-      document.getElementById("typingStatus").innerText = "";
-    }
-
-    function appendMessage(sender, message, className) {
-      const chat = document.getElementById("chat");
-      const msgDiv = document.createElement("div");
-      msgDiv.className = `message ${className}`;
-      msgDiv.innerHTML = `<strong>${sender}:</strong> ${message}`;
-      chat.appendChild(msgDiv);
-      chat.scrollTop = chat.scrollHeight;
     }
   </script>
 </body>
