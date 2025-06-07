@@ -93,15 +93,15 @@
   </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-app.js";
-    import {
-      getFirestore,
-      collection,
-      addDoc,
-      query,
-      where,
-      getDocs
-    } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore.js";
+    import { initializeApp } from "https://unpkg.com/firebase@9.24.0/app/dist/index.esm.js";
+    import { 
+      getFirestore, 
+      collection, 
+      addDoc, 
+      query, 
+      where, 
+      getDocs 
+    } from "https://unpkg.com/firebase@9.24.0/firestore/dist/index.esm.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAQlPoupRMYE9_4Sli4-ZFjGJEyhnJWpQU",
@@ -138,7 +138,6 @@
       showMessage("Checking username availability...");
 
       try {
-        // Check if username already exists
         const usersRef = collection(db, "users");
         const q = query(usersRef, where("username", "==", username));
         const querySnapshot = await getDocs(q);
@@ -148,7 +147,6 @@
           return;
         }
 
-        // Save new user credentials
         await addDoc(usersRef, {
           username: username,
           password: password,
